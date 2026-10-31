@@ -1,10 +1,10 @@
 # SpendWise
 
-A personal finance tracker with a React frontend and an Express/MongoDB API.
+SpendWise is a personal finance tracker built with React, Vite, Express, and MongoDB Atlas.
 
 ## Project layout
 
-- `frontend/` - React, Vite, Tailwind CSS, and React Router
+- `frontend/` - React and Vite single-page application
 - `backend/` - Express API, Mongoose models, JWT authentication, and Excel exports
 
 ## Run locally
@@ -16,10 +16,31 @@ A personal finance tracker with a React frontend and an Express/MongoDB API.
 
 Never commit `.env`, database connection strings, passwords, or generated exports.
 
-## Deploy with Render
+## Deploy with Vercel
 
-The root `render.yaml` describes a Render Blueprint with an Express web service and a React static site. Connect this repository in Render using **New → Blueprint**. During setup, provide `MONGO_URI` as a secret value. Render generates `JWT_SECRET`; the frontend and API origins are configured for the service names in the Blueprint.
+This repository uses two Vercel projects connected to the same GitHub repository.
 
-After the first deploy, confirm the service URLs match `https://spendwise-api.onrender.com` and `https://spendwise-web.onrender.com`. If Render assigns different URLs, update `VITE_API_BASE_URL` on the static site and `FRONTEND_ORIGIN` on the API, then redeploy. Configure Atlas Network Access so the hosted API can reach the cluster; keep access as restricted as the hosting plan allows.
+### 1. Deploy the API
 
-Render rewrites frontend routes to `index.html` so direct visits to `/login`, `/dashboard`, and other client routes work.
+Create a Vercel project for `Rao-Ammar/spendwise` and set its **Root Directory** to `backend`. Vercel detects the Express app from `server.js`.
+
+Add these environment variables in the API project's Production environment:
+
+- `MONGO_URI` - your rotated MongoDB Atlas connection string
+- `JWT_SECRET` - a long random value
+- `JWT_EXPIRY` - `24h`
+- `FRONTEND_ORIGIN` - the production frontend origin, such as `https://spendwise.vercel.app`
+
+Deploy, then note the API project's `.vercel.app` URL.
+
+### 2. Deploy the frontend
+
+Create another Vercel project from the same repository and set its **Root Directory** to `frontend`. Use the Vite defaults: build command `npm run build`, output directory `dist`.
+
+Set this environment variable before deploying:
+
+- `VITE_API_BASE_URL` - the API project's origin, with no trailing slash, such as `https://spendwise-api.vercel.app`
+
+The frontend's `vercel.json` rewrites deep links to `index.html`, so routes such as `/login` and `/dashboard` load directly.
+
+If Vercel gives the frontend a different URL, update `FRONTEND_ORIGIN` on the API project and redeploy the API. Keep the MongoDB Atlas network access list restricted to the hosting access pattern you choose.
