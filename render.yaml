@@ -1,0 +1,35 @@
+services:
+  - type: web
+    name: spendwise-api
+    runtime: node
+    plan: free
+    region: singapore
+    rootDir: backend
+    buildCommand: npm ci
+    startCommand: npm start
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: JWT_SECRET
+        generateValue: true
+      - key: JWT_EXPIRY
+        value: 24h
+      - key: MONGO_URI
+        sync: false
+      - key: FRONTEND_ORIGIN
+        value: https://spendwise-web.onrender.com
+
+  - type: web
+    name: spendwise-web
+    runtime: static
+    rootDir: frontend
+    buildCommand: npm ci && npm run build
+    staticPublishPath: dist
+    envVars:
+      - key: VITE_API_BASE_URL
+        value: https://spendwise-api.onrender.com
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
