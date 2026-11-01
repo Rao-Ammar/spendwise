@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react'
 import { NavLink, useNavigate } from 'react-router-dom'
 import logo from '../assets/logo.png'
 
@@ -10,9 +11,19 @@ const pages = [
 
 export default function Layout({ children }) {
   const navigate = useNavigate()
+  const [theme, setTheme] = useState(() => localStorage.getItem('spendwise_theme') || 'dark')
   const storedUser = localStorage.getItem('spendwise_user')
   let user = null
   try { user = storedUser ? JSON.parse(storedUser) : null } catch { user = null }
+
+  useEffect(() => {
+    document.documentElement.dataset.theme = theme
+    localStorage.setItem('spendwise_theme', theme)
+  }, [theme])
+
+  function toggleTheme() {
+    setTheme((current) => current === 'dark' ? 'light' : 'dark')
+  }
 
   function signOut() {
     localStorage.removeItem('spendwise_token')
@@ -44,7 +55,12 @@ export default function Layout({ children }) {
           <img src={logo} alt="SpendWise" className="w-40 object-contain object-left lg:hidden" />
           <div className="hidden lg:block"><p className="text-xs text-white/35">Personal finance</p><p className="mt-1 text-sm font-medium text-white/80">Your workspace</p></div>
           <button onClick={signOut} className="rounded-lg border border-white/10 px-3 py-2 text-xs text-white/60 transition hover:border-rose-300/20 hover:text-rose-200 lg:hidden">Sign out</button>
-          <div className="hidden items-center gap-3 lg:flex"><div className="text-right"><p className="text-sm font-medium text-white/80">{user?.name || 'Welcome'}</p><p className="text-xs text-white/35">Good to see you</p></div><div className="grid h-9 w-9 place-items-center rounded-full border border-emerald-200/20 bg-emerald-300/10 text-sm font-semibold text-emerald-200">{user?.name?.[0]?.toUpperCase() || 'S'}</div></div>
+          <div className="flex items-center gap-3">
+            <button type="button" onClick={toggleTheme} aria-label={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`} className="rounded-lg border border-white/10 px-3 py-2 text-xs text-white/65 transition hover:border-emerald-200/20 hover:text-emerald-200">
+              <span aria-hidden="true" className="mr-2">{theme === 'dark' ? '☼' : '☾'}</span>{theme === 'dark' ? 'Light mode' : 'Dark mode'}
+            </button>
+            <div className="hidden items-center gap-3 lg:flex"><div className="text-right"><p className="text-sm font-medium text-white/80">{user?.name || 'Welcome'}</p><p className="text-xs text-white/35">Good to see you</p></div><div className="grid h-9 w-9 place-items-center rounded-full border border-emerald-200/20 bg-emerald-300/10 text-sm font-semibold text-emerald-200">{user?.name?.[0]?.toUpperCase() || 'S'}</div></div>
+          </div>
         </header>
         <main className="mx-auto w-full max-w-[1440px] px-5 py-7 pb-24 sm:px-8 sm:py-9 sm:pb-24 lg:px-10 lg:pb-9">{children}</main>
       </div>
